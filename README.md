@@ -1,6 +1,6 @@
 # ElevenLabs Speech-to-Text Skill for OpenClaw
 
-Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript.
+ElevenLabs Speech-to-Text skill for OpenClaw mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript.
 
 ## Overview
 
@@ -30,7 +30,7 @@ This skill integrates with ElevenLabs' cutting-edge Speech-to-Text API, providin
 1. Clone the repository to your OpenClaw skills directory:
 ```bash
 cd ~/.openclaw/skills
-git clone https://github.com/HunWarrior/eleven-stt.git
+git clone https://github.com/xHunx/eleven-stt.git
 ```
 
 2. Configure your ElevenLabs API key:
