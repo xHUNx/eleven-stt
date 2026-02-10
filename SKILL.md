@@ -2,6 +2,15 @@
 name: eleven-stt
 version: 0.2.0
 description: "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript."
+metadata:
+  openclaw:
+    requires:
+      env:
+        - "ELEVENLABS_STT_API_KEY"
+      config:
+        - "config.keys.elevenlabs_stt"
+        - "config.skillOverrides.eleven-stt.model_id"
+        - "config.skillOverrides.eleven-stt.language_code"
 ---
 
 # ElevenLabs Speech-to-Text
