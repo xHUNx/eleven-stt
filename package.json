@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/eleven-stt",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript.",
   "keywords": [
     "openclaw",
@@ -19,12 +19,33 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HunWarrior/eleven-stt.git"
+    "url": "https://github.com/xHUNx/eleven-stt.git"
   },
-  "homepage": "https://github.com/HunWarrior/eleven-stt#readme",
+  "homepage": "https://github.com/xHUNx/eleven-stt#readme",
   "bugs": {
-    "url": "https://github.com/HunWarrior/eleven-stt/issues"
+    "url": "https://github.com/xHUNx/eleven-stt/issues"
   },
+  "main": "src/index.js",
+  "bin": {
+    "eleven-stt": "src/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "validate": "python validate.py",
+    "test": "python test_skill.py"
+  },
+  "files": [
+    "src",
+    "scripts",
+    "README.md",
+    "SKILL.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "PUBLISHING_CHECKLIST.md",
+    "setup_github.sh"
+  ],
   "dependencies": {
     "axios": "^1.6.0",
     "form-data": "^4.0.0"

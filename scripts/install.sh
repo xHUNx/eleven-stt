@@ -1,48 +1,50 @@
-#!/bin/bash
-
-# Installation script for ElevenLabs Speech-to-Text Skill
-# This script helps set up the skill in an OpenClaw environment
-
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 SKILL_NAME="eleven-stt"
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OPENCLAW_SKILLS_DIR="$HOME/.openclaw/skills"
+TARGET_DIR="$HOME/.openclaw/skills/$SKILL_NAME"
 
-echo "Installing $SKILL_NAME skill..."
+printf 'Installing %s into %s
+' "$SKILL_NAME" "$TARGET_DIR"
 
-# Check if OpenClaw skills directory exists
-if [ ! -d "$OPENCLAW_SKILLS_DIR" ]; then
-    echo "Creating OpenClaw skills directory..."
-    mkdir -p "$OPENCLAW_SKILLS_DIR"
-fi
+mkdir -p "$TARGET_DIR"
 
-# Copy skill to OpenClaw directory
-SKILL_TARGET_DIR="$OPENCLAW_SKILLS_DIR/$SKILL_NAME"
-if [ -d "$SKILL_TARGET_DIR" ]; then
-    echo "Updating existing skill..."
-    rm -rf "$SKILL_TARGET_DIR"
-fi
+rsync -a --delete --exclude='.git' --exclude='node_modules' "$SKILL_DIR/" "$TARGET_DIR/"
 
-cp -r "$SKILL_DIR" "$SKILL_TARGET_DIR"
+cd "$TARGET_DIR"
 
-echo "Skill installed successfully at $SKILL_TARGET_DIR"
-
-# Check if config file exists and suggest adding API key
-CONFIG_FILE="$HOME/.openclaw/config.yaml"
-if [ -f "$CONFIG_FILE" ]; then
-    if ! grep -q "elevenlabs_stt" "$CONFIG_FILE"; then
-        echo ""
-        echo "To complete the setup, add your ElevenLabs API key to your OpenClaw config:"
-        echo ""
-        echo "config.keys.elevenlabs_stt: YOUR_API_KEY_HERE"
-        echo ""
-    fi
+if command -v npm >/dev/null 2>&1; then
+  printf 'Installing npm dependencies (production only)...
+'
+  npm install --production >/dev/null 2>&1 && printf 'npm dependencies installed
+'
 else
-    echo ""
-    echo "To complete the setup, create a config file with your ElevenLabs API key:"
-    echo "config.keys.elevenlabs_stt: YOUR_API_KEY_HERE"
-    echo ""
+  printf 'npm not found; please run "npm install --production" in %s manually
+' "$TARGET_DIR"
 fi
 
-echo "Installation complete!"
+if [ -f "$HOME/.openclaw/config.yaml" ]; then
+  if ! grep -q "elevenlabs_stt" "$HOME/.openclaw/config.yaml"; then
+    cat <<EOF
+Add your ElevenLabs API key to config.yaml to finish setup:
+
+config:
+  keys:
+    elevenlabs_stt: YOUR_API_KEY_HERE
+
+EOF
+  fi
+else
+  cat <<EOF
+Create ~/.openclaw/config.yaml and add your API key:
+
+config:
+  keys:
+    elevenlabs_stt: YOUR_API_KEY_HERE
+
+EOF
+fi
+
+printf '%s installation complete.
+' "$SKILL_NAME"

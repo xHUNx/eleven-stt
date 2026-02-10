@@ -1,6 +1,6 @@
 ---
 name: eleven-stt
-version: 0.1.1
+version: 0.2.0
 description: "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript."
 ---
 
@@ -52,6 +52,15 @@ Return:
 - Raw ElevenLabs response in `meta.raw` for debugging.
 
 If `response_format` is `text`, include the raw text. If `json`, preserve the structure of ElevenLabs’ response (e.g., `transcription.text`, `diarization`, `tags`).
+
+## Developer API
+The skill ships with a JavaScript wrapper (`src/index.js`) that exports the `ElevenLabsSTT` class and a `transcribe` helper. Use it anywhere in OpenClaw or your own Node workflows, and use the bundled CLI (`eleven-stt`) for quick experimentation.
+
+```javascript
+const { ElevenLabsSTT } = require('@openclaw/eleven-stt');
+const client = new ElevenLabsSTT({ apiKey: process.env.ELEVENLABS_STT_API_KEY });
+const transcript = await client.transcribe({ file: './dialogue.mp3', diarize: true });
+```
 
 ## Errors
 - Surface ElevenLabs error messages (code/message) in a user-friendly sentence (e.g., “ElevenLabs rejected the upload: file is bigger than 50 MB”).

@@ -1,180 +1,145 @@
 # ElevenLabs Speech-to-Text Skill for OpenClaw
 
-ElevenLabs Speech-to-Text skill for OpenClaw mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript.
+Lean installer. Steroid-level capabilities.
 
-## Overview
+A production-ready wrapper around ElevenLabs’ Scribe v2 and realtime streams, built so your OpenClaw deployment can transcribe every channel (batch, live, diarized, multilingual, tagged, and timestamped) without a six-step setup.
 
-This skill integrates with ElevenLabs' cutting-edge Speech-to-Text API, providing high-accuracy transcription capabilities with support for both batch and real-time processing. The skill is designed to handle a wide variety of audio formats and offers extensive configuration options for optimal transcription quality.
+## Highlights
 
-## Features
-
-- **High Accuracy Transcription**: Leverages ElevenLabs' Scribe v2 model for superior transcription quality
-- **Batch & Real-time Support**: Choose between batch processing for accuracy or real-time for low latency
-- **Multi-language Support**: Auto-detection or manual specification of 90+ languages
-- **Speaker Diarization**: Identify and separate different speakers in audio (up to 32)
-- **Audio Event Tagging**: Detect and tag non-speech events like laughter, applause, music
-- **Precise Timestamps**: Word-level or character-level timing information
-- **Entity Detection**: Identify PII, PHI, PCI, and other sensitive information
-- **Keyterm Prompting**: Bias recognition toward specific vocabulary
-- **Multiple Output Formats**: Support for SRT, VTT, PDF, DOCX, and more
-- **HIPAA Compliance**: Secure handling with automatic cleanup
-
-## Prerequisites
-
-- OpenClaw v1.0.0 or higher
-- ElevenLabs API key with Speech-to-Text access
-- Node.js 16+ (for development)
+- **Full Scribe v2 stack**: batch + realtime, automatic language detection, speaker diarization (32 speakers), entity detection, keyterm prompting, audio-event tags, and choice of JSON/text outputs.
+- **Zero-hassle install**: `scripts/install.sh` copies only the surfaced files into `~/.openclaw/skills/eleven-stt`, wires up npm dependencies, and leaves your workspace clean.
+- **Developer-friendly API**: use the `ElevenLabsSTT` class from `src/index.js` or the `eleven-stt` CLI for quick testing.
+- **Secure by design**: API keys live in `config.keys.elevenlabs_stt` (or `ELEVENLABS_STT_API_KEY`) and transcripts are deleted after retrieval unless you opt in to retain them.
 
 ## Installation
 
-1. Clone the repository to your OpenClaw skills directory:
 ```bash
 cd ~/.openclaw/skills
-git clone https://github.com/xHunx/eleven-stt.git
+git clone https://github.com/xHUNx/eleven-stt.git
+cd eleven-stt
+./scripts/install.sh
 ```
 
-2. Configure your ElevenLabs API key:
-```bash
-# Set in your OpenClaw config
-config.keys.elevenlabs_stt = "your_api_key_here"
-```
+The installer copies just the skill manifest, scripts, docs, and source code into your skills directory, then runs `npm install --production` inside the target path so the skill stays lean.
+
+If you prefer manual control:
+
+1. Copy the repository to `~/.openclaw/skills/eleven-stt`.
+2. Run `npm install --production` inside that directory.
+3. Wire up your ElevenLabs API key (see below).
 
 ## Configuration
 
-The skill supports various configuration options that can be set in your OpenClaw configuration:
+Set your ElevenLabs API key in OpenClaw’s config:
 
 ```yaml
-skillOverrides:
-  eleven-stt:
-    model_id: "scribe_v2"                 # "scribe_v2" or "scribe_v2_realtime"
-    language_code: null                    # ISO-639 code or null for auto-detect
-    diarize: false                        # Enable speaker diarization
-    num_speakers: null                     # Number of expected speakers (1-32)
-    tag_audio_events: true                # Tag audio events like laughter
-    timestamps_granularity: "word"         # "word", "character", or "none"
-    response_format: "json"               # "json" or "text"
-    keyterm_prompts: []                   # Array of key terms to prioritize
-    additional_formats: []                # Additional output formats
+config:
+  keys:
+    elevenlabs_stt: your-secret-api-key
 ```
+
+The skill also falls back to the `ELEVENLABS_STT_API_KEY` environment variable for CLI or workflow runs outside the GUI.
+
+Optional overrides go under `config.skillOverrides.eleven-stt`:
+
+| Key | Purpose | Values |
+| --- | ------- | ------ |
+| `model_id` | Choose between batch and realtime engines | `scribe_v2` (batch), `scribe_v2_realtime` (stream) |
+| `language_code` | Force a language | ISO-639 string (e.g. `hu`, `en`, `en-US`), `null` for auto-detect |
+| `diarize` / `num_speakers` | Separate multiple voices | `true`/`false`, integer 1–32 |
+| `tag_audio_events` | Capture applause, laughter, etc. | `true`/`false` |
+| `timestamps_granularity` | Level of timestamps | `word`, `character`, `none` |
+| `keyterm_prompts` | Vocabulary to bias toward | Array of strings |
+| `additional_formats` | Export extra formats | Array of `srt`, `vtt`, `txt`, etc. |
+| `response_format` | Return raw JSON or flat text | `json`/`text` |
+| `retain_transcript` | Keep the transcript on ElevenLabs for reuse | `true`/`false` (default is `false`) |
+
+Tip: use `keyterm_prompts` and `num_speakers` together when you have known names or expected interlocutors.
 
 ## Usage
 
-The skill is automatically triggered when OpenClaw needs transcription services. You can also invoke it directly with audio files:
+### Programmatic (JavaScript)
 
-### File Upload
 ```javascript
-// Example usage within OpenClaw
-const result = await skill('eleven-stt', {
-  file: '/path/to/audio.mp3',
+const { ElevenLabsSTT } = require('@openclaw/eleven-stt');
+
+const client = new ElevenLabsSTT({ apiKey: process.env.ELEVENLABS_STT_API_KEY });
+
+const result = await client.transcribe({
+  file: './dialogue.mp3',
   diarize: true,
-  language_code: 'en'
+  num_speakers: 3,
+  keyterm_prompts: ['project', 'budget'],
+  additional_formats: ['srt', 'vtt'],
+  response_format: 'json'
 });
+
+console.log('Transcript', result.transcription.text);
+
+// The raw ElevenLabs response lives in result.meta if you need it.
 ```
 
-### URL-based Processing
-```javascript
-const result = await skill('eleven-stt', {
-  cloud_storage_url: 'https://example.com/audio.mp3',
-  tag_audio_events: true
-});
-```
+The `transcribe()` call accepts:
 
-## API Integration
+- `file`: path, Buffer, or stream
+- `cloud_storage_url`: HTTPS URL or signed URL
+- `model_id`, `language_code`, `diarize`, `num_speakers`, `tag_audio_events`
+- `timestamps_granularity`, `response_format`, `keyterm_prompts`, `additional_formats`
+- `metadata`: key/value pairs forwarded to ElevenLabs for tracing
+- `retain_transcript`: keep the transcript on ElevenLabs after fetch (use with care)
 
-The skill seamlessly integrates with ElevenLabs' API endpoints:
-
-- **Batch Transcription**: `POST /v1/speech-to-text`
-- **Real-time Transcription**: `wss://api.elevenlabs.io/v1/speech-to-text/realtime`
-- **Get Transcript**: `GET /v1/speech-to-text/transcripts/{transcription_id}`
-- **Delete Transcript**: `DELETE /v1/speech-to-text/transcripts/{transcription_id}`
-
-## Supported Audio Formats
-
-The skill supports all major audio and video formats accepted by ElevenLabs:
-
-- **Audio**: MP3, WAV, AAC, OGG, M4A, FLAC, etc.
-- **Video**: MP4, AVI, WebM, MOV, etc.
-- **Raw PCM**: 16-bit PCM at 16kHz (little-endian, mono)
-
-Maximum file size: 3 GB for batch processing.
-
-## Output Format
-
-Depending on the configuration, the skill returns structured data:
-
-```javascript
-{
-  transcript: "The transcribed text...",
-  language_code: "en",
-  language_probability: 0.98,
-  words: [...], // Array of word objects with timing
-  diarization: [...], // Speaker information if enabled
-  audio_events: [...], // Tagged audio events if enabled
-  entities: [...], // Detected entities if enabled
-  duration_ms: 12345,
-  confidence: 0.95,
-  meta: {
-    raw: {...}, // Raw ElevenLabs response
-    transcription_id: "..."
-  }
-}
-```
-
-## Security & Privacy
-
-- **Automatic Cleanup**: Transcripts are deleted after retrieval to ensure privacy
-- **Secure Storage**: API keys stored securely in OpenClaw's configuration system
-- **Zero Retention Mode**: Enterprise users can enable zero retention for enhanced privacy
-- **HIPAA Compliance**: Designed with healthcare use cases in mind
-
-## Troubleshooting
-
-### Common Issues
-
-1. **API Key Not Found**: Ensure your API key is properly set in `config.keys.elevenlabs_stt`
-2. **Unsupported File Type**: Convert audio to a supported format (WAV, MP3, OGG)
-3. **Large File Error**: Break files larger than 3GB into smaller segments
-4. **Rate Limiting**: Implement appropriate backoff strategies for high-volume usage
-
-### Error Messages
-
-- `"ElevenLabs API key not configured"`: Set the API key in your config
-- `"File too large"`: Reduce file size or split into smaller segments
-- `"Unsupported format"`: Convert to a supported audio format
-
-## Development
-
-To contribute to this skill:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-### Testing
-
-The skill includes testing utilities for verification:
+### CLI (fast experimentation)
 
 ```bash
-# Use sample audio for testing
-https://storage.googleapis.com/eleven-public-cdn/audio/marketing/nicole.mp3
+eleven-stt --file notes.m4a --diarize --speakers 2 --formats srt,vtt --prompt "quarterly" --output text
 ```
 
-## Contributing
+CLI options:
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+| Flag | Description |
+| --- | ----------- |
+| `--api-key` | Override the stored API key (defaults to `ELEVENLABS_STT_API_KEY`) |
+| `--file` | Local audio/video file (path) |
+| `--url` | Remote/cloud URL |
+| `--model` | `scribe_v2` or `scribe_v2_realtime` |
+| `--language` | ISO code to pin the language |
+| `--diarize` | Enable speaker diarization |
+| `--speakers` | Number of expected speakers for diarization |
+| `--events` | Enable audio-event tagging |
+| `--timestamps` | `word`, `character`, or `none` |
+| `--formats` | Comma-separated list of extra formats (`srt`, `vtt`, `txt`, …) |
+| `--prompt` | Add a keyterm prompt (repeatable) |
+| `--metadata` | Attach metadata in `key=value` form (repeatable) |
+| `--retain` | Skip automatic transcript deletion |
+| `--output` | `json` (default) or `text` |
+| `--help` | Show help and exit |
 
-## License
+CLI outputs the full response in JSON or a concise object when `--output text` is provided.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Packaging & Release
+
+- Run `npm run validate` (calls `validate.py`) before publishing.
+- Use `python scripts/package_skill.py .` to generate a distributable `.zip` containing the manifest, docs, and supporting scripts.
+
+When you publish to ClawHub or a private registry, the `.zip` file can be uploaded as-is; OpenClaw’s skill loader only needs the manifest, scripts, and `src/` code.
+
+## Testing
+
+We ship two validators for CI:
+
+```bash
+npm run validate     # runs validate.py
+python test_skill.py  # alternate validator with YAML parser
+```
+
+Use the sample clip `https://storage.googleapis.com/eleven-public-cdn/audio/marketing/nicole.mp3` with diarization and tagging enabled to verify the JSON payload and timing accuracy.
 
 ## Support
 
-For support, please open an issue on GitHub or contact the maintainer.
+Open an issue on GitHub and include:
 
-## Credits
+- Audio sample (if you can share) or format details
+- CLI command you ran
+- Configuration overrides from `config.skillOverrides.eleven-stt`
 
-- Built for OpenClaw ecosystem
-- Powered by ElevenLabs Speech-to-Text API
-- Created by Daniel A
+We’re watching this repo; expect updates whenever ElevenLabs changes the Scribe contract.
