@@ -7,10 +7,6 @@ metadata:
     requires:
       env:
         - "ELEVENLABS_STT_API_KEY"
-      config:
-        - "config.keys.elevenlabs_stt"
-        - "config.skillOverrides.eleven-stt.model_id"
-        - "config.skillOverrides.eleven-stt.language_code"
 ---
 
 # ElevenLabs Speech-to-Text
