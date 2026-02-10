@@ -1,0 +1,32 @@
+{
+  "name": "@openclaw/eleven-stt",
+  "version": "0.1.1",
+  "description": "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript.",
+  "keywords": [
+    "openclaw",
+    "skill",
+    "elevenlabs",
+    "speech-to-text",
+    "stt",
+    "transcription",
+    "scribe",
+    "audio",
+    "recognition",
+    "diarization",
+    "realtime"
+  ],
+  "author": "Daniel A",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HunWarrior/eleven-stt.git"
+  },
+  "homepage": "https://github.com/HunWarrior/eleven-stt#readme",
+  "bugs": {
+    "url": "https://github.com/HunWarrior/eleven-stt/issues"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "form-data": "^4.0.0"
+  }
+}
