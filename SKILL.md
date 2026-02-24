@@ -1,12 +1,7 @@
 ---
 name: eleven-stt
 version: 0.2.0
-description: "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: GUI API-key storage, multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript."
-metadata:
-  openclaw:
-    requires:
-      env:
-        - "ELEVENLABS_STT_API_KEY"
+description: "Official ElevenLabs Speech-to-Text skill mirroring the Scribe v2 capability stack: multi-channel batch + realtime support, speaker diarization, 90+ language recognition, keyterm prompting, entity detection, precise timestamps, audio-event tagging, and HIPAA-aware cleanup for every transcript."
 ---
 
 # ElevenLabs Speech-to-Text
@@ -15,7 +10,7 @@ metadata:
 Leverage this skill whenever OpenClaw needs high-accuracy transcription via ElevenLabs’ Speech-to-Text API—batch (Scribe v2) or realtime (Scribe v2 Realtime)—especially when you care about multilingual support, keyterm prompting, speaker diarization, entity detection, audio-event tagging, or per-word timestamps.
 
 ## Authentication & configuration
-- Store the ElevenLabs API key under `config.keys.elevenlabs_stt` so the skill keeps it separate from the TTS entry and the GUI can show a dedicated text field. Fall back to the environment variable `ELEVENLABS_STT_API_KEY` if the key isn’t set there, and never hard-code secrets in the skill itself. HIPAA customers must contact ElevenLabs Sales for a BAA before sending protected health data.
+- Store the ElevenLabs API key under `config.keys.elevenlabs_stt` (or provide it via the `ELEVENLABS_STT_API_KEY` environment variable) and never hard-code secrets in the skill itself. HIPAA customers must contact ElevenLabs Sales for a BAA before sending protected health data.
 - Optional configuration knobs (default in `config.skillOverrides.eleven-stt`):
   - `model_id` (string, default `scribe_v2`) — choose `scribe_v2` for batch accuracy or `scribe_v2_realtime` for streaming/low latency.
   - `language_code` (string/`null`, default `null`) — let the model detect from 90+ languages or pin an ISO-639 code for stubborn accents.
